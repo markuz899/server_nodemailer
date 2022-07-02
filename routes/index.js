@@ -4,7 +4,7 @@ const { transporter } = require("../config");
 
 router.post("/send-email", async (req, res) => {
   const mailOptions = {
-    from: '"Test sgasgas" <markuz.89@hotmail.it>', // sender address
+    from: `"Test sgasgas" <${process.env.TRANSPORTER_USER}>`, // sender address
     to: req.body.to, // list of receivers
     subject: req.body.subject, // Subject line
     text: req.body.body, // plain text body
