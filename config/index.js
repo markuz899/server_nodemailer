@@ -1,27 +1,51 @@
 const nodeMailer = require("nodemailer");
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
+require("dotenv").config();
 
-// GMAIL ERROR
-//   const transporter = nodeMailer.createTransport({
-//     host: "smtp.gmail.com",
-//     port: 587,
-//     secure: false, // true for 465, false for other ports 587
-//     auth: {
-//       user: "fortestingdebug@gmail.com",
-//       pass: "kosymcrznwjbwqsp",
-//     },
-//   });
+const createTransporter = async () => {
+  const oauth2Client = new OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+  );
 
-const transporter = nodeMailer.createTransport({
-  host: process.env.HOST,
-  secureConnection: process.env.SECURE,
-  port: process.env.HOST_PORT,
-  tls: {
-    ciphers: "SSLv3",
-  },
-  auth: {
-    user: process.env.TRANSPORTER_USER,
-    pass: process.env.TRANSPORTER_PASSWORD,
-  },
-});
+  oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN,
+  });
 
-module.exports = { transporter };
+  const accessToken = await new Promise((resolve, reject) => {
+    oauth2Client.getAccessToken((err, token) => {
+      if (err) {
+        reject("Failed to create access token :(");
+      }
+      resolve(token);
+    });
+  });
+
+  const transporter = nodeMailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: process.env.EMAIL,
+      accessToken,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken: process.env.REFRESH_TOKEN,
+    },
+  });
+
+  return transporter;
+};
+
+const sendEmail = async (emailOptions) => {
+  try {
+    let emailTransporter = await createTransporter();
+    await emailTransporter.sendMail(emailOptions);
+    console.log("SENDEMAIL - SUCCESS - Email inviata correttamente");
+  } catch (err) {
+    console.log("SENDEMAIL - ERROR", err);
+  }
+};
+
+module.exports = { sendEmail };
