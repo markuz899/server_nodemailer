@@ -4,17 +4,19 @@ const { sendEmail } = require("../config");
 
 router.post("/send-email", async (req, res) => {
   const mailOptions = {
-    from: `"Test sgasgas" <${process.env.EMAIL}>`,
+    from: `"${process.env.DEFAULT_FROM}" <${process.env.EMAIL}>`,
     to: req.body.to,
     subject: req.body.subject,
-    text: req.body.body,
-    html: req.body.body,
+    html: req.body.html,
   };
 
   try {
     await sendEmail(mailOptions);
-    res.render("index");
+    res.json({
+      status: true,
+    });
   } catch (err) {
+    res.json({ status: false, error: err });
     console.log(`Errore invio mail - ${err}`);
   }
 });
