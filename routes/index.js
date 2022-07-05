@@ -4,7 +4,7 @@ const { sendEmail } = require("../config");
 
 router.post("/send-email", async (req, res) => {
   const mailOptions = {
-    from: `"${process.env.DEFAULT_FROM}" <${process.env.EMAIL}>`,
+    from: `"${process.env.DEFAULT_FROM}" <${process.env.DEFAULT_EMAIL}>`,
     to: req.body.to,
     subject: req.body.subject,
     html: req.body.html,
